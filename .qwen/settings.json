@@ -16,7 +16,10 @@
       "Bash(git add *)",
       "Bash(git branch *)",
       "Bash(git commit *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(npm *)"
     ]
   },
   "$version": 3

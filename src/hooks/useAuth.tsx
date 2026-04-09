@@ -3,13 +3,14 @@
 import { useState, useEffect, createContext, useContext, type ReactNode } from "react";
 import {
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { getWallets, hasNoWallets, getDecryptedPrivateKey } from "@/lib/keystore";
+import { getWallets } from "@/lib/keystore";
 import type { Wallet } from "@/lib/keystore";
 
 export interface IOSTSession {
@@ -45,20 +46,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<IOSTSession | null>(null);
 
   const refreshWallets = async (uid: string) => {
-    const walletList = await getWallets(uid);
-    setWallets(walletList);
-    setNeedsOnboarding(walletList.length === 0);
+    try {
+      const walletList = await getWallets(uid);
+      setWallets(walletList);
+      setNeedsOnboarding(walletList.length === 0);
 
-    if (walletList.length > 0) {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
-      if (saved && walletList.find((w) => w.id === saved)) {
-        setActiveWalletIdState(saved);
+      if (walletList.length > 0) {
+        const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
+        if (saved && walletList.find((w) => w.id === saved)) {
+          setActiveWalletIdState(saved);
+        } else {
+          setActiveWalletIdState(walletList[0].id);
+        }
       } else {
-        setActiveWalletIdState(walletList[0].id);
+        setActiveWalletIdState(null);
+        setSession(null);
       }
-    } else {
-      setActiveWalletIdState(null);
-      setSession(null);
+    } catch (err) {
+      console.error("Wallet fetch error:", err);
+      setWallets([]);
+      setNeedsOnboarding(true);
     }
   };
 
@@ -79,7 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // アクティブウォレットが変更されたらセッションをリセット
   useEffect(() => {
     if (session && session.walletId !== activeWalletId) {
       setSession(null);
@@ -95,11 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const unlock = async (pin: string): Promise<boolean> => {
     if (!user || !activeWalletId) return false;
-
     try {
+      const { getDecryptedPrivateKey } = await import("@/lib/keystore");
       const result = await getDecryptedPrivateKey(user.uid, activeWalletId, pin);
       if (!result) return false;
-
       setSession({
         walletId: activeWalletId,
         accountId: result.iostAccountName,
@@ -115,8 +120,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   };
+
+  useEffect(() => {
+    getRedirectResult(auth).catch((err) => {
+      console.error("Redirect error:", err);
+    });
+  }, []);
 
   const logout = async () => {
     if (typeof window !== "undefined") {

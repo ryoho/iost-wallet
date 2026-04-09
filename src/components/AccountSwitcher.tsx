@@ -5,22 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { deleteWallet } from "@/lib/keystore";
 
-interface AccountSwitcherProps {
-  onClose: () => void;
-}
+interface Props { onClose: () => void; }
+type Mode = "switch" | "add";
 
-type AddMode = "switch" | "add";
-
-export default function AccountSwitcher({ onClose }: AccountSwitcherProps) {
+export default function AccountSwitcher({ onClose }: Props) {
   const { user, wallets, activeWalletId, setActiveWalletId, refreshWallets } = useAuth();
   const router = useRouter();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [mode, setMode] = useState<AddMode>("switch");
-
-  const handleSwitch = (id: string) => {
-    setActiveWalletId(id);
-    onClose();
-  };
+  const [mode, setMode] = useState<Mode>("switch");
 
   const handleDelete = async (id: string) => {
     if (!user) return;
@@ -29,97 +21,41 @@ export default function AccountSwitcher({ onClose }: AccountSwitcherProps) {
     await refreshWallets();
   };
 
-  const handleCreate = () => { onClose(); router.push("/create"); };
-  const handleImport = () => { onClose(); router.push("/import"); };
+  if (mode === "add") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
+        <div className="w-full max-w-sm bg-white rounded-xl shadow-lg p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+          <h3 className="text-base font-semibold text-gray-800 mb-2">➕ アカウントを追加</h3>
+          <button onClick={() => { onClose(); router.push("/create"); }} className="w-full bg-white border border-gray-200 rounded-xl p-5 text-left hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-xl">✨</div><div><p className="text-gray-700 font-medium">新しく作成する</p><p className="text-gray-400 text-xs mt-0.5">無料で即座に作成</p></div></div>
+          </button>
+          <button onClick={() => { onClose(); router.push("/import"); }} className="w-full bg-white border border-gray-200 rounded-xl p-5 text-left hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-xl">🔑</div><div><p className="text-gray-700 font-medium">インポート</p><p className="text-gray-400 text-xs mt-0.5">既存のアカウントを取込</p></div></div>
+          </button>
+          <button onClick={() => setMode("switch")} className="w-full text-gray-400 text-sm py-2 hover:text-gray-600">← 戻る</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="w-full max-w-sm bg-white rounded-2xl border-2 border-slate-300 shadow-md p-6" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-black text-slate-700">
-            {mode === "switch" ? "💎 アカウント切り替え" : "➕ アカウントを追加"}
-          </h3>
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl border-2 border-slate-300 hover:bg-slate-50 text-slate-400 font-bold">✕</button>
-        </div>
-
-        {mode === "switch" ? (
-          <>
-            <div className="space-y-3 mb-5">
-              {wallets.map((w) => (
-                <div
-                  key={w.id}
-                  className={`flex items-center justify-between p-5 rounded-xl border-2 transition-all ${
-                    w.id === activeWalletId
-                      ? "bg-sky-50 border-sky-300"
-                      : "bg-white border-slate-300 hover:border-slate-400"
-                  }`}
-                >
-                  <button onClick={() => handleSwitch(w.id)} className="flex-1 text-left">
-                    <p className={`text-sm font-black ${w.id === activeWalletId ? "text-sky-500" : "text-slate-700"}`}>
-                      {w.iostAccountName}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-1 font-bold">
-                      {w.id === activeWalletId ? "✅ アクティブ" : "タップで切り替え"}
-                    </p>
-                  </button>
-
-                  {wallets.length > 1 && (
-                    confirmDelete === w.id ? (
-                      <div className="flex gap-2 ml-3">
-                        <button onClick={() => handleDelete(w.id)} className="text-xs bg-rose-400 border-2 border-rose-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-rose-500">削除</button>
-                        <button onClick={() => setConfirmDelete(null)} className="text-xs bg-white border-2 border-slate-300 text-slate-600 px-4 py-2 rounded-xl font-bold hover:bg-slate-50">取消</button>
-                      </div>
-                    ) : (
-                      <button onClick={() => setConfirmDelete(w.id)} className="text-lg text-slate-300 hover:text-rose-400 ml-3">🗑️</button>
-                    )
-                  )}
-                </div>
-              ))}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
+      <div className="w-full max-w-sm bg-white rounded-xl shadow-lg p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4"><h3 className="text-base font-semibold text-gray-800">💎 アカウント</h3><button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50">✕</button></div>
+        <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
+          {wallets.map((w) => (
+            <div key={w.id} className={`flex items-center justify-between p-4 rounded-lg border ${w.id === activeWalletId ? "bg-blue-50 border-blue-200" : "bg-white border-gray-100"}`}>
+              <button onClick={() => { setActiveWalletId(w.id); onClose(); }} className="flex-1 text-left min-w-0">
+                <p className={`text-sm font-medium truncate ${w.id === activeWalletId ? "text-blue-600" : "text-gray-700"}`}>{w.iostAccountName}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{w.id === activeWalletId ? "✅ アクティブ" : "タップで切替"}</p>
+              </button>
+              {wallets.length > 1 && (confirmDelete === w.id ? (
+                <div className="flex gap-2 ml-2"><button onClick={() => handleDelete(w.id)} className="text-xs bg-red-500 text-white px-3 py-1.5 rounded-lg">削除</button><button onClick={() => setConfirmDelete(null)} className="text-xs bg-gray-100 px-3 py-1.5 rounded-lg">取消</button></div>
+              ) : <button onClick={() => setConfirmDelete(w.id)} className="text-sm text-gray-300 ml-2">🗑️</button>)}
             </div>
-
-            <button
-              onClick={() => setMode("add")}
-              className="w-full bg-white border-2 border-dashed border-slate-300 text-slate-500 font-bold py-4 rounded-2xl hover:bg-slate-50 transition-all"
-            >
-              ➕ アカウントを追加
-            </button>
-          </>
-        ) : (
-          <div className="space-y-4">
-            <button
-              onClick={handleCreate}
-              className="w-full bg-white border-2 border-slate-300 rounded-2xl p-6 text-left hover:border-sky-300 hover:shadow-md transition-all group"
-            >
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-full bg-sky-100 border-2 border-sky-200 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">✨</div>
-                <div>
-                  <p className="text-slate-700 font-black">新しく作成する</p>
-                  <p className="text-slate-400 text-xs mt-1 font-bold">無料で即座にアカウント作成</p>
-                </div>
-              </div>
-            </button>
-
-            <button
-              onClick={handleImport}
-              className="w-full bg-white border-2 border-slate-300 rounded-2xl p-6 text-left hover:border-violet-300 hover:shadow-md transition-all group"
-            >
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">🔑</div>
-                <div>
-                  <p className="text-slate-700 font-black">既存のアカウントをインポート</p>
-                  <p className="text-slate-400 text-xs mt-1 font-bold">IOSTの秘密鍵を入力してください</p>
-                </div>
-              </div>
-            </button>
-
-            <button
-              onClick={() => setMode("switch")}
-              className="w-full text-slate-400 text-sm font-bold py-3 hover:text-slate-600 transition-colors"
-            >
-              ← 切り替え画面に戻る
-            </button>
-          </div>
-        )}
+          ))}
+        </div>
+        <button onClick={() => setMode("add")} className="w-full bg-gray-50 border border-dashed border-gray-300 text-gray-500 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">➕ 追加</button>
       </div>
     </div>
   );

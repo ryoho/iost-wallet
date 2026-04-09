@@ -3,62 +3,35 @@
 import { getTxRecords, type TxRecord } from "@/lib/txHistory";
 import { useState, useEffect } from "react";
 
-const typeIconMap: Record<TxRecord["type"], string> = {
-  send: "📤", receive: "📥", stake: "🌱", unstake: "🔓",
-  vote: "🗳️", unvote: "❌", reward: "🎁",
-};
+const icons: Record<TxRecord["type"], string> = { send: "📤", receive: "📥", stake: "🌱", unstake: "🔓", vote: "🗳️", unvote: "❌", reward: "🎁" };
 
 export default function TxHistory() {
   const [records, setRecords] = useState<TxRecord[]>([]);
+  useEffect(() => { setRecords(getTxRecords()); }, []);
 
-  useEffect(() => {
-    setRecords(getTxRecords());
-  }, []);
+  const fmt = (iso: string) => new Date(iso).toLocaleString("ja-JP", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
 
-  const formatDate = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleString("ja-JP", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
-  };
-
-  if (records.length === 0) {
-    return (
-      <div className="bg-white border-2 border-slate-300 rounded-2xl shadow-md p-8 text-center">
-        <p className="text-slate-400 text-sm font-bold">📋 トランザクション履歴はありません</p>
-      </div>
-    );
-  }
+  if (!records.length) return <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-400 text-sm">📋 履歴はありません</div>;
 
   return (
-    <div className="bg-white border-2 border-slate-300 rounded-2xl shadow-md divide-y-2 divide-slate-200">
+    <div className="bg-white rounded-xl shadow-sm divide-y divide-gray-50">
       {records.map((tx) => (
-        <div key={tx.id} className="px-6 py-5">
+        <div key={tx.id} className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-slate-300 flex items-center justify-center">
-                <span className="text-xl">{typeIconMap[tx.type]}</span>
-              </div>
-              <div>
-                <p className="text-sm font-black text-slate-700">{tx.label}</p>
-                {tx.counterparty && (
-                  <p className="text-[11px] text-slate-400 font-medium truncate max-w-[140px]">
-                    {tx.counterparty}
-                  </p>
-                )}
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0"><span>{icons[tx.type]}</span></div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-700">{tx.label}</p>
+                {tx.counterparty && <p className="text-[11px] text-gray-400 truncate">{tx.counterparty}</p>}
               </div>
             </div>
-            <div className="text-right">
-              <p className={`text-sm font-black ${tx.amount.startsWith("+") ? "text-emerald-500" : "text-slate-700"}`}>
-                {tx.amount}
-              </p>
-              <p className="text-[10px] text-slate-400 font-bold">{formatDate(tx.timestamp)}</p>
+            <div className="text-right flex-shrink-0">
+              <p className={`text-sm font-semibold ${tx.amount.startsWith("+") ? "text-green-500" : "text-gray-700"}`}>{tx.amount}</p>
+              <p className="text-[10px] text-gray-400">{fmt(tx.timestamp)}</p>
             </div>
           </div>
-          {tx.txHash && (
-            <p className="text-[10px] text-slate-300 mt-2 font-mono truncate">TX: {tx.txHash}</p>
-          )}
-          {tx.status === "failed" && tx.message && (
-            <p className="text-[10px] text-rose-500 mt-2 font-bold">❌ {tx.message}</p>
-          )}
+          {tx.txHash && <p className="text-[10px] text-gray-300 mt-1 font-mono truncate">{tx.txHash.slice(0, 20)}...</p>}
+          {tx.status === "failed" && tx.message && <p className="text-[10px] text-red-400 mt-1">{tx.message}</p>}
         </div>
       ))}
     </div>

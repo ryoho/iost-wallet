@@ -25,11 +25,11 @@ export default function PinInputDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl border-2 border-slate-300 shadow-md p-6 space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+      <div className="w-full max-w-sm bg-white rounded-xl shadow-lg p-6 space-y-4">
         <div>
-          <h3 className="text-lg font-black text-slate-700">{title}</h3>
-          <p className="text-sm text-slate-400 mt-1 font-medium">{description}</p>
+          <h3 className="text-base font-semibold text-gray-800">{title}</h3>
+          <p className="text-sm text-gray-400 mt-0.5">{description}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -37,20 +37,16 @@ export default function PinInputDialog({
             type="password" inputMode="numeric" value={pin}
             onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
             placeholder="1234" maxLength={8}
-            className="w-full px-4 py-5 rounded-xl border-2 border-slate-300 bg-slate-50 text-slate-700 text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-sky-300 font-mono font-black"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-gray-800 text-center text-xl tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-400 font-mono font-semibold"
             autoFocus
           />
-
-          {error && <div className="bg-rose-50 border-2 border-rose-300 text-rose-500 text-sm rounded-xl px-5 py-4 font-bold">{error}</div>}
-
-          <div className="flex gap-4">
+          {error && <div className="bg-red-50 text-red-500 text-sm rounded-lg px-4 py-3">{error}</div>}
+          <div className="flex gap-3">
             {onCancel && (
-              <button type="button" onClick={onCancel} className="flex-1 bg-white border-2 border-slate-300 text-slate-600 font-bold py-4 rounded-2xl hover:bg-slate-50 active:scale-[0.98] transition-all">
-                キャンセル
-              </button>
+              <button type="button" onClick={onCancel} className="flex-1 bg-gray-50 text-gray-600 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">キャンセル</button>
             )}
-            <button type="submit" disabled={loading || pin.length < 4} className="flex-1 bg-sky-400 border-2 border-sky-500 text-white font-bold py-4 rounded-2xl shadow-md hover:bg-sky-500 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {loading ? "⏳ 確認中..." : "✅ 確認"}
+            <button type="submit" disabled={loading || pin.length < 4} className="flex-1 bg-blue-500 text-white font-medium py-3 rounded-lg hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              {loading ? "確認中..." : "確認"}
             </button>
           </div>
         </form>
