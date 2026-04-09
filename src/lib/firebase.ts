@@ -1,10 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import {
-  getAuth,
-  setPersistence,
-  browserLocalPersistence,
-  inMemoryPersistence,
-} from "firebase/auth";
+import { getAuth, browserLocalPersistence, setPersistence, inMemoryPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -19,9 +14,10 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 
-// 永続化設定: リダイレクト後もログイン状態を保持
+// 即時に永続化を設定（同期実行に近い状態で確実に設定）
 if (typeof window !== "undefined") {
   setPersistence(auth, browserLocalPersistence).catch(() => {
+    // フォールバック
     setPersistence(auth, inMemoryPersistence);
   });
 }

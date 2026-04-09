@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext, type ReactNode, useCallback } from "react";
+import { useState, useEffect, createContext, useContext, type ReactNode } from "react";
 import {
   GoogleAuthProvider,
   signInWithRedirect,
@@ -44,35 +44,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [session, setSession] = useState<IOSTSession | null>(null);
 
-  const loadWallets = useCallback(async (firebaseUser: User) => {
-    try {
-      const walletList = await getWallets(firebaseUser.uid);
-      setWallets(walletList);
-      setNeedsOnboarding(walletList.length === 0);
-      if (walletList.length > 0) {
-        const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
-        if (saved && walletList.find((w) => w.id === saved)) {
-          setActiveWalletIdState(saved);
-        } else {
-          setActiveWalletIdState(walletList[0].id);
-        }
-      } else {
-        setActiveWalletIdState(null);
-        setSession(null);
-      }
-    } catch {
-      setWallets([]);
-      setNeedsOnboarding(true);
-    }
-  }, []);
-
   useEffect(() => {
-    let unsubscribed = false;
+    // デバッグ: localStorageのFirebaseauth状態を確認
+    const keys = Object.keys(localStorage).filter(k => k.startsWith("firebase:authUser"));
+    console.log("[Auth] localStorage keys:", keys);
+    keys.forEach(k => {
+      try {
+        const data = JSON.parse(localStorage.getItem(k) || "{}");
+        console.log("[Auth] stored user:", data.email);
+      } catch {}
+    });
+
+    let authStateReceived = false;
+    let minTimerDone = false;
+    let redirectProcessed = false;
+
+    const checkReady = () => {
+      if (authStateReceived && minTimerDone && redirectProcessed) {
+        console.log("[Auth] Ready. user =", auth.currentUser?.email || null);
+        setLoading(false);
+      }
+    };
+
+    // リダイレクト結果の処理を待つ
+    getRedirectResult(auth)
+      .then((result) => {
+        redirectProcessed = true;
+        console.log("[Auth] Redirect result:", result?.user?.email || "none");
+      })
+      .catch((err) => {
+        redirectProcessed = true;
+        console.log("[Auth] No redirect result:", err?.code || "unknown");
+      });
+
+    // 最小1.5秒待機
+    const minTimer = setTimeout(() => {
+      minTimerDone = true;
+      checkReady();
+    }, 1500);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (unsubscribed) return;
+      authStateReceived = true;
+      console.log("[Auth] onAuthStateChanged:", firebaseUser?.email || null);
+
       if (firebaseUser) {
         setUser(firebaseUser);
-        await loadWallets(firebaseUser);
+        try {
+          const walletList = await getWallets(firebaseUser.uid);
+          setWallets(walletList);
+          setNeedsOnboarding(walletList.length === 0);
+          if (walletList.length > 0) {
+            const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
+            if (saved && walletList.find((w) => w.id === saved)) {
+              setActiveWalletIdState(saved);
+            } else {
+              setActiveWalletIdState(walletList[0].id);
+            }
+          } else {
+            setActiveWalletIdState(null);
+            setSession(null);
+          }
+        } catch {
+          setWallets([]);
+          setNeedsOnboarding(true);
+        }
       } else {
         setUser(null);
         setWallets([]);
@@ -80,16 +115,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setNeedsOnboarding(null);
         setSession(null);
       }
-      setLoading(false);
+      checkReady();
     });
 
-    getRedirectResult(auth).catch(() => {});
-
     return () => {
-      unsubscribed = true;
+      clearTimeout(minTimer);
       unsubscribe();
     };
-  }, [loadWallets]);
+  }, []);
 
   useEffect(() => {
     if (session && session.walletId !== activeWalletId) {
@@ -121,11 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    try {
-      await signInWithRedirect(auth, provider);
-    } catch {
-      // フォールバック不要（リダイレクトは常に成功する）
-    }
+    await signInWithRedirect(auth, provider);
   };
 
   const logout = async () => {

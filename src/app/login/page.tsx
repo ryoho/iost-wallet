@@ -1,26 +1,44 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 
 export default function LoginPage() {
   const { user, loading, needsOnboarding, signInWithGoogle } = useAuth();
   const [errorMsg, setErrorMsg] = useState("");
+  const [checking, setChecking] = useState(true);
 
-  // 認証状態に応じたページ遷移
+  // 直接 auth.currentUser をチェック
   useEffect(() => {
-    if (loading) return;
-    if (!user) return;
-    if (needsOnboarding === null) return;
+    const check = async () => {
+      // 現在のユーザーを直接確認
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        // すでにログイン済み → リロードをトリガーしてAuthContextに反映
+        // onAuthStateChanged が発火するのを待つ
+      }
+      // 少し待ってloading状態が解決するのを待つ
+      setTimeout(() => setChecking(false), 300);
+    };
+    check();
+  }, []);
 
-    // 直接 window.location で遷移（Next.jsルーターより確実）
-    if (needsOnboarding) {
-      window.location.href = "/onboarding";
-    } else {
-      window.location.href = "/";
+  // 認証状態に応じた遷移
+  useEffect(() => {
+    if (checking) return;
+    if (loading) return;
+
+    if (user) {
+      if (needsOnboarding === true) {
+        window.location.href = "/onboarding";
+      } else if (needsOnboarding === false) {
+        window.location.href = "/";
+      }
     }
-  }, [user, loading, needsOnboarding]);
+  }, [user, loading, needsOnboarding, checking]);
 
   const handleGoogleLogin = async () => {
     setErrorMsg("");
@@ -31,20 +49,11 @@ export default function LoginPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-400 text-sm">読み込み中...</div>
-      </div>
-    );
-  }
-
-  // 認証済みでneedsOnboardingが確定している場合は何も表示しない（リダイレクト中）
-  if (user && needsOnboarding !== null) {
+  if (checking || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="text-gray-400 text-sm mb-2">リダイレクト中...</div>
+          <div className="text-gray-400 text-sm mb-2">読み込み中...</div>
           <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto" />
         </div>
       </div>
