@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext, type ReactNode } from "react";
+import { useState, useEffect, createContext, useContext, type ReactNode, useCallback } from "react";
 import {
   GoogleAuthProvider,
   signInWithRedirect,
@@ -32,7 +32,6 @@ interface AuthContextType {
   isUnlocked: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-  refreshWallets: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -45,30 +44,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [session, setSession] = useState<IOSTSession | null>(null);
 
-  // 1. onAuthStateChanged でユーザー状態を追跡
+  const loadWallets = useCallback(async (firebaseUser: User) => {
+    try {
+      const walletList = await getWallets(firebaseUser.uid);
+      setWallets(walletList);
+      setNeedsOnboarding(walletList.length === 0);
+      if (walletList.length > 0) {
+        const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
+        if (saved && walletList.find((w) => w.id === saved)) {
+          setActiveWalletIdState(saved);
+        } else {
+          setActiveWalletIdState(walletList[0].id);
+        }
+      } else {
+        setActiveWalletIdState(null);
+        setSession(null);
+      }
+    } catch {
+      setWallets([]);
+      setNeedsOnboarding(true);
+    }
+  }, []);
+
   useEffect(() => {
+    let unsubscribed = false;
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (unsubscribed) return;
       if (firebaseUser) {
         setUser(firebaseUser);
-        try {
-          const walletList = await getWallets(firebaseUser.uid);
-          setWallets(walletList);
-          setNeedsOnboarding(walletList.length === 0);
-          if (walletList.length > 0) {
-            const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
-            if (saved && walletList.find((w) => w.id === saved)) {
-              setActiveWalletIdState(saved);
-            } else {
-              setActiveWalletIdState(walletList[0].id);
-            }
-          } else {
-            setActiveWalletIdState(null);
-            setSession(null);
-          }
-        } catch {
-          setWallets([]);
-          setNeedsOnboarding(true);
-        }
+        await loadWallets(firebaseUser);
       } else {
         setUser(null);
         setWallets([]);
@@ -79,17 +83,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => unsubscribe();
-  }, []);
+    getRedirectResult(auth).catch(() => {});
 
-  // 2. getRedirectResult でリダイレクト後の認証結果を取得
-  useEffect(() => {
-    getRedirectResult(auth).catch(() => {
-      // リダイレクト結果がなくても onAuthStateChanged が処理する
-    });
-  }, []);
+    return () => {
+      unsubscribed = true;
+      unsubscribe();
+    };
+  }, [loadWallets]);
 
-  // 3. アクティブウォレット変更時にセッションをリセット
   useEffect(() => {
     if (session && session.walletId !== activeWalletId) {
       setSession(null);
@@ -120,7 +121,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    try {
+      await signInWithRedirect(auth, provider);
+    } catch {
+      // フォールバック不要（リダイレクトは常に成功する）
+    }
   };
 
   const logout = async () => {
@@ -129,14 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user, loading, wallets, activeWalletId, setActiveWalletId, needsOnboarding,
-        session, unlock, lock, isUnlocked: session !== null,
-        signInWithGoogle, logout,
-        refreshWallets: () => user ? getWallets(user.uid).then((w) => { setWallets(w); }).catch(() => {}) : Promise.resolve(),
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, wallets, activeWalletId, setActiveWalletId, needsOnboarding, session, unlock, lock, isUnlocked: session !== null, signInWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

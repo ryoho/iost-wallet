@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { addWallet } from "@/lib/keystore";
 
 type Step = "pin" | "confirm" | "import";
 
 export default function ImportPage() {
-  const { user, refreshWallets } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>("pin");
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
@@ -27,7 +25,12 @@ export default function ImportPage() {
     if (!name.trim() || !key.trim()) { setError("入力してください"); return; }
     if (!user) { setError("ログインが必要"); return; }
     setLoading(true);
-    try { await addWallet(user.uid, name.trim(), key.trim(), pin); await refreshWallets(); router.push("/"); }
+    try {
+      await addWallet(user.uid, name.trim(), key.trim(), pin);
+      const { getWallets } = await import("@/lib/keystore");
+      await getWallets(user.uid);
+      window.location.href = "/";
+    }
     catch { setError("保存に失敗しました"); }
     finally { setLoading(false); }
   };

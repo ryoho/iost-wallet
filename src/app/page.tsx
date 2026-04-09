@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { useIOSTBalance } from "@/hooks/useIOSTBalance";
@@ -14,7 +13,6 @@ import SendModal from "@/components/SendModal";
 import Image from "next/image";
 
 export default function Home() {
-  const router = useRouter();
   const { wallets, activeWalletId, session } = useAuth();
   const activeWallet = wallets.find((w) => w.id === activeWalletId);
   const { balance } = useIOSTBalance(activeWallet?.iostAccountName || "");
@@ -39,7 +37,7 @@ export default function Home() {
               <QuickActions
                 onSend={() => setShowSendModal(true)}
                 onReceive={() => setShowReceiveModal(true)}
-                onStake={() => router.push("/staking")}
+                onStake={() => window.location.href = "/staking"}
               />
               <div>
                 <h3 className="text-gray-500 font-semibold text-sm px-1 mb-3">📋 最近のトランザクション</h3>

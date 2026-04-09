@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 type State = "idle" | "creating" | "success" | "failed";
 
 export default function CreatePage() {
-  const router = useRouter();
   const [state, setState] = useState<State>("idle");
   const [acc, setAcc] = useState("");
   const [pubKey, setPubKey] = useState("");
@@ -33,6 +31,7 @@ export default function CreatePage() {
     const blob = new Blob([`アカウント: ${acc}\n公開鍵: ${pubKey}\n秘密鍵: ${secKey}`], { type: "text/plain" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${acc}.txt`; a.click();
   };
+  const goToLogin = () => { window.location.href = "/login"; };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center px-6 py-8">
@@ -53,10 +52,10 @@ export default function CreatePage() {
         <div className="w-full max-w-sm space-y-3 mb-6">
           <button onClick={copy} className="w-full bg-gray-50 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">📎 秘密鍵をコピー</button>
           <button onClick={download} className="w-full bg-gray-50 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">📥 ダウンロード</button>
-          <button onClick={() => router.push("/login")} className="w-full bg-gray-900 text-white font-medium py-3 rounded-lg hover:bg-gray-800 transition-colors">🔐 インポート</button>
+          <button onClick={goToLogin} className="w-full bg-gray-900 text-white font-medium py-3 rounded-lg hover:bg-gray-800 transition-colors">🔐 インポート</button>
         </div>
       )}
-      <button onClick={() => router.push("/login")} className="text-gray-400 text-sm mt-4 hover:text-gray-600">← ログインに戻る</button>
+      <button onClick={goToLogin} className="text-gray-400 text-sm mt-4 hover:text-gray-600">← ログインに戻る</button>
     </div>
   );
 }

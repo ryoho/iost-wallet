@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { deleteWallet } from "@/lib/keystore";
 
@@ -9,8 +8,7 @@ interface Props { onClose: () => void; }
 type Mode = "switch" | "add";
 
 export default function AccountSwitcher({ onClose }: Props) {
-  const { user, wallets, activeWalletId, setActiveWalletId, refreshWallets } = useAuth();
-  const router = useRouter();
+  const { user, wallets, activeWalletId, setActiveWalletId } = useAuth();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("switch");
 
@@ -18,7 +16,7 @@ export default function AccountSwitcher({ onClose }: Props) {
     if (!user) return;
     await deleteWallet(user.uid, id);
     setConfirmDelete(null);
-    await refreshWallets();
+    window.location.reload();
   };
 
   if (mode === "add") {
@@ -26,10 +24,10 @@ export default function AccountSwitcher({ onClose }: Props) {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
         <div className="w-full max-w-sm bg-white rounded-xl shadow-lg p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
           <h3 className="text-base font-semibold text-gray-800 mb-2">➕ アカウントを追加</h3>
-          <button onClick={() => { onClose(); router.push("/create"); }} className="w-full bg-white border border-gray-200 rounded-xl p-5 text-left hover:bg-gray-50 transition-colors">
+          <button onClick={() => { onClose(); window.location.href = "/create"; }} className="w-full bg-white border border-gray-200 rounded-xl p-5 text-left hover:bg-gray-50 transition-colors">
             <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-xl">✨</div><div><p className="text-gray-700 font-medium">新しく作成する</p><p className="text-gray-400 text-xs mt-0.5">無料で即座に作成</p></div></div>
           </button>
-          <button onClick={() => { onClose(); router.push("/import"); }} className="w-full bg-white border border-gray-200 rounded-xl p-5 text-left hover:bg-gray-50 transition-colors">
+          <button onClick={() => { onClose(); window.location.href = "/import"; }} className="w-full bg-white border border-gray-200 rounded-xl p-5 text-left hover:bg-gray-50 transition-colors">
             <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-xl">🔑</div><div><p className="text-gray-700 font-medium">インポート</p><p className="text-gray-400 text-xs mt-0.5">既存のアカウントを取込</p></div></div>
           </button>
           <button onClick={() => setMode("switch")} className="w-full text-gray-400 text-sm py-2 hover:text-gray-600">← 戻る</button>

@@ -1,44 +1,50 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 
 export default function LoginPage() {
   const { user, loading, needsOnboarding, signInWithGoogle } = useAuth();
-  const router = useRouter();
-  const [redirecting, setRedirecting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // 認証状態に応じたページ遷移
   useEffect(() => {
     if (loading) return;
-    if (user) {
-      setRedirecting(true);
-      if (needsOnboarding === true) {
-        router.push("/onboarding");
-      } else if (needsOnboarding === false) {
-        router.push("/");
-      }
-      // needsOnboardingがnullの間は待機
+    if (!user) return;
+    if (needsOnboarding === null) return;
+
+    // 直接 window.location で遷移（Next.jsルーターより確実）
+    if (needsOnboarding) {
+      window.location.href = "/onboarding";
+    } else {
+      window.location.href = "/";
     }
-  }, [user, loading, needsOnboarding, router]);
+  }, [user, loading, needsOnboarding]);
 
   const handleGoogleLogin = async () => {
     setErrorMsg("");
     try {
       await signInWithGoogle();
-    } catch (err: unknown) {
-      console.error("Google login error:", err);
-      setErrorMsg("ログインに失敗しました。もう一度お試しください。");
+    } catch {
+      setErrorMsg("ログインに失敗しました");
     }
   };
 
-  if (loading || redirecting) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-400 text-sm">読み込み中...</div>
+      </div>
+    );
+  }
+
+  // 認証済みでneedsOnboardingが確定している場合は何も表示しない（リダイレクト中）
+  if (user && needsOnboarding !== null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="text-gray-400 text-sm mb-2">{redirecting ? "リダイレクト中..." : "読み込み中..."}</div>
+          <div className="text-gray-400 text-sm mb-2">リダイレクト中...</div>
           <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto" />
         </div>
       </div>
@@ -57,9 +63,7 @@ export default function LoginPage() {
           <p className="text-gray-400 text-sm">シンプルで安全なウォレット</p>
         </div>
 
-        {errorMsg && (
-          <div className="bg-red-50 text-red-500 text-sm rounded-lg px-4 py-3">{errorMsg}</div>
-        )}
+        {errorMsg && <div className="bg-red-50 text-red-500 text-sm rounded-lg px-4 py-3">{errorMsg}</div>}
 
         <button
           onClick={handleGoogleLogin}
@@ -80,12 +84,9 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-gray-100" />
         </div>
 
-        <button
-          onClick={() => router.push("/create")}
-          className="w-full bg-gray-900 text-white font-medium px-4 py-3 rounded-lg hover:bg-gray-800 active:bg-gray-700 transition-colors"
-        >
+        <a href="/create" className="w-full block text-center bg-gray-900 text-white font-medium px-4 py-3 rounded-lg hover:bg-gray-800 active:bg-gray-700 transition-colors">
           🍭 アカウントをつくる
-        </button>
+        </a>
       </div>
 
       <p className="text-xs text-gray-300 mt-8 text-center leading-relaxed max-w-xs">
