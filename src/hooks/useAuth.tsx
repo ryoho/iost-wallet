@@ -44,13 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [activeWalletId, setActiveWalletIdState] = useState<string | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [session, setSession] = useState<IOSTSession | null>(null);
+  const [justRedirected, setJustRedirected] = useState(false);
 
-  const refreshWallets = async (uid: string) => {
+  const loadWallets = async (firebaseUser: User) => {
     try {
-      const walletList = await getWallets(uid);
+      const walletList = await getWallets(firebaseUser.uid);
       setWallets(walletList);
       setNeedsOnboarding(walletList.length === 0);
-
       if (walletList.length > 0) {
         const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
         if (saved && walletList.find((w) => w.id === saved)) {
@@ -62,8 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setActiveWalletIdState(null);
         setSession(null);
       }
-    } catch (err) {
-      console.error("Wallet fetch error:", err);
+    } catch {
       setWallets([]);
       setNeedsOnboarding(true);
     }
@@ -73,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        await refreshWallets(firebaseUser.uid);
+        await loadWallets(firebaseUser);
       } else {
         setWallets([]);
         setActiveWalletIdState(null);
@@ -83,6 +82,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) setJustRedirected(true);
+      })
+      .catch((err) => console.error("Redirect error:", err));
+
     return () => unsubscribe();
   }, []);
 
@@ -90,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session && session.walletId !== activeWalletId) {
       setSession(null);
     }
-  }, [activeWalletId]);
+  }, [activeWalletId, session]);
 
   const setActiveWalletId = (id: string | null) => {
     setActiveWalletIdState(id);
@@ -105,11 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { getDecryptedPrivateKey } = await import("@/lib/keystore");
       const result = await getDecryptedPrivateKey(user.uid, activeWalletId, pin);
       if (!result) return false;
-      setSession({
-        walletId: activeWalletId,
-        accountId: result.iostAccountName,
-        privateKey: result.privateKey,
-      });
+      setSession({ walletId: activeWalletId, accountId: result.iostAccountName, privateKey: result.privateKey });
       return true;
     } catch {
       return false;
@@ -123,35 +124,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithRedirect(auth, provider);
   };
 
-  useEffect(() => {
-    getRedirectResult(auth).catch((err) => {
-      console.error("Redirect error:", err);
-    });
-  }, []);
-
   const logout = async () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("iost_active_wallet");
-    }
+    if (typeof window !== "undefined") localStorage.removeItem("iost_active_wallet");
     await signOut(auth);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        loading,
-        wallets,
-        activeWalletId,
-        setActiveWalletId,
-        needsOnboarding,
-        session,
-        unlock,
-        lock,
-        isUnlocked: session !== null,
-        signInWithGoogle,
-        logout,
-        refreshWallets: () => user ? refreshWallets(user.uid) : Promise.resolve(),
+        user, loading, wallets, activeWalletId, setActiveWalletId, needsOnboarding,
+        session, unlock, lock, isUnlocked: session !== null,
+        signInWithGoogle, logout,
+        refreshWallets: () => user ? loadWallets(user) : Promise.resolve(),
       }}
     >
       {children}
@@ -161,8 +145,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }
