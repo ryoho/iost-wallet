@@ -44,36 +44,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [activeWalletId, setActiveWalletIdState] = useState<string | null>(null);
   const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
   const [session, setSession] = useState<IOSTSession | null>(null);
-  const [justRedirected, setJustRedirected] = useState(false);
 
-  const loadWallets = async (firebaseUser: User) => {
-    try {
-      const walletList = await getWallets(firebaseUser.uid);
-      setWallets(walletList);
-      setNeedsOnboarding(walletList.length === 0);
-      if (walletList.length > 0) {
-        const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
-        if (saved && walletList.find((w) => w.id === saved)) {
-          setActiveWalletIdState(saved);
-        } else {
-          setActiveWalletIdState(walletList[0].id);
-        }
-      } else {
-        setActiveWalletIdState(null);
-        setSession(null);
-      }
-    } catch {
-      setWallets([]);
-      setNeedsOnboarding(true);
-    }
-  };
-
+  // 1. onAuthStateChanged でユーザー状態を追跡
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
       if (firebaseUser) {
-        await loadWallets(firebaseUser);
+        setUser(firebaseUser);
+        try {
+          const walletList = await getWallets(firebaseUser.uid);
+          setWallets(walletList);
+          setNeedsOnboarding(walletList.length === 0);
+          if (walletList.length > 0) {
+            const saved = typeof window !== "undefined" ? localStorage.getItem("iost_active_wallet") : null;
+            if (saved && walletList.find((w) => w.id === saved)) {
+              setActiveWalletIdState(saved);
+            } else {
+              setActiveWalletIdState(walletList[0].id);
+            }
+          } else {
+            setActiveWalletIdState(null);
+            setSession(null);
+          }
+        } catch {
+          setWallets([]);
+          setNeedsOnboarding(true);
+        }
       } else {
+        setUser(null);
         setWallets([]);
         setActiveWalletIdState(null);
         setNeedsOnboarding(null);
@@ -82,15 +79,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) setJustRedirected(true);
-      })
-      .catch((err) => console.error("Redirect error:", err));
-
     return () => unsubscribe();
   }, []);
 
+  // 2. getRedirectResult でリダイレクト後の認証結果を取得
+  useEffect(() => {
+    getRedirectResult(auth).catch(() => {
+      // リダイレクト結果がなくても onAuthStateChanged が処理する
+    });
+  }, []);
+
+  // 3. アクティブウォレット変更時にセッションをリセット
   useEffect(() => {
     if (session && session.walletId !== activeWalletId) {
       setSession(null);
@@ -135,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user, loading, wallets, activeWalletId, setActiveWalletId, needsOnboarding,
         session, unlock, lock, isUnlocked: session !== null,
         signInWithGoogle, logout,
-        refreshWallets: () => user ? loadWallets(user) : Promise.resolve(),
+        refreshWallets: () => user ? getWallets(user.uid).then((w) => { setWallets(w); }).catch(() => {}) : Promise.resolve(),
       }}
     >
       {children}
