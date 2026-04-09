@@ -3,8 +3,7 @@
 import { useState, useEffect, createContext, useContext, type ReactNode } from "react";
 import {
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
   type User,
@@ -45,48 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<IOSTSession | null>(null);
 
   useEffect(() => {
-    // デバッグ: localStorageのFirebaseauth状態を確認
-    const keys = Object.keys(localStorage).filter(k => k.startsWith("firebase:authUser"));
-    console.log("[Auth] localStorage keys:", keys);
-    keys.forEach(k => {
-      try {
-        const data = JSON.parse(localStorage.getItem(k) || "{}");
-        console.log("[Auth] stored user:", data.email);
-      } catch {}
-    });
-
-    let authStateReceived = false;
-    let minTimerDone = false;
-    let redirectProcessed = false;
-
-    const checkReady = () => {
-      if (authStateReceived && minTimerDone && redirectProcessed) {
-        console.log("[Auth] Ready. user =", auth.currentUser?.email || null);
-        setLoading(false);
-      }
-    };
-
-    // リダイレクト結果の処理を待つ
-    getRedirectResult(auth)
-      .then((result) => {
-        redirectProcessed = true;
-        console.log("[Auth] Redirect result:", result?.user?.email || "none");
-      })
-      .catch((err) => {
-        redirectProcessed = true;
-        console.log("[Auth] No redirect result:", err?.code || "unknown");
-      });
-
-    // 最小1.5秒待機
-    const minTimer = setTimeout(() => {
-      minTimerDone = true;
-      checkReady();
-    }, 1500);
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      authStateReceived = true;
-      console.log("[Auth] onAuthStateChanged:", firebaseUser?.email || null);
-
       if (firebaseUser) {
         setUser(firebaseUser);
         try {
@@ -115,13 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setNeedsOnboarding(null);
         setSession(null);
       }
-      checkReady();
+      setLoading(false);
     });
 
-    return () => {
-      clearTimeout(minTimer);
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -154,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    await signInWithPopup(auth, provider);
   };
 
   const logout = async () => {

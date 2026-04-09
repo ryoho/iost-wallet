@@ -9,36 +9,33 @@ import Image from "next/image";
 export default function LoginPage() {
   const { user, loading, needsOnboarding, signInWithGoogle } = useAuth();
   const [errorMsg, setErrorMsg] = useState("");
-  const [checking, setChecking] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
 
-  // 直接 auth.currentUser をチェック
+  // 直接 auth を監視（AuthProvider と独立して）
   useEffect(() => {
-    const check = async () => {
-      // 現在のユーザーを直接確認
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        // すでにログイン済み → リロードをトリガーしてAuthContextに反映
-        // onAuthStateChanged が発火するのを待つ
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      setAuthReady(true);
+      if (firebaseUser) {
+        console.log("[Login] Auth ready:", firebaseUser.email);
+      } else {
+        console.log("[Login] No user");
       }
-      // 少し待ってloading状態が解決するのを待つ
-      setTimeout(() => setChecking(false), 300);
-    };
-    check();
+    });
+    return () => unsub();
   }, []);
 
-  // 認証状態に応じた遷移
+  // AuthContext の状態に応じた遷移
   useEffect(() => {
-    if (checking) return;
-    if (loading) return;
+    if (loading || !authReady) return;
+    if (!user) return;
+    if (needsOnboarding === null) return;
 
-    if (user) {
-      if (needsOnboarding === true) {
-        window.location.href = "/onboarding";
-      } else if (needsOnboarding === false) {
-        window.location.href = "/";
-      }
+    if (needsOnboarding) {
+      window.location.href = "/onboarding";
+    } else {
+      window.location.href = "/";
     }
-  }, [user, loading, needsOnboarding, checking]);
+  }, [user, loading, needsOnboarding, authReady]);
 
   const handleGoogleLogin = async () => {
     setErrorMsg("");
@@ -49,7 +46,7 @@ export default function LoginPage() {
     }
   };
 
-  if (checking || loading) {
+  if (loading || !authReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
