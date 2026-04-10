@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 // CoinGecko APIからIOST/JPYレートを取得
-const COINGECKO_IOST_ID = "iost";
+const COINGECKO_IOST_ID = "iostoken";
 
 let cachedRate: number | null = null;
 let cacheTime = 0;

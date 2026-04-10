@@ -99,3 +99,33 @@ export async function unvoteProducer(
   const tx = iost.callABI("vote_producer.iost", "unvote", [accountId, producer, amount]);
   return sendTransaction(iost, tx);
 }
+
+/**
+ * RAM取得（RAMコインステーキング）トランザクション
+ */
+export async function stakeForRam(
+  accountId: string,
+  privateKey: string,
+  amount: string
+): Promise<TxResult> {
+  const iost = getIOST();
+  await setupIOSTAccount(iost, accountId, privateKey);
+
+  const tx = iost.callABI("ramcoin.iost", "pledge", [accountId, amount]);
+  return sendTransaction(iost, tx);
+}
+
+/**
+ * RAMステーキング解除（RAMコイン返却）
+ */
+export async function unstakeRam(
+  accountId: string,
+  privateKey: string,
+  amount: string
+): Promise<TxResult> {
+  const iost = getIOST();
+  await setupIOSTAccount(iost, accountId, privateKey);
+
+  const tx = iost.callABI("ramcoin.iost", "unpledge", [accountId, amount]);
+  return sendTransaction(iost, tx);
+}

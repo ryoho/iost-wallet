@@ -32,23 +32,25 @@ export default function Home() {
     <RequireAuth>
       <div className="min-h-screen bg-bg flex flex-col">
         <Header />
-        <div className="flex-1 px-4 py-6 pb-24 space-y-6">
+        <div className="flex-1 px-4 py-6 pb-24">
           {txResult && (
-            <div className="bg-[#1d8f6d]/10 border-2 border-[#1d8f6d] text-[#1d8f6d] text-sm rounded-none px-5 py-4 font-medium flex items-center gap-2">
+            <div className="bg-[#1d8f6d]/10 border-2 border-[#1d8f6d] text-[#1d8f6d] text-sm rounded-none px-5 py-4 mb-6 font-medium flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" /> トランザクションを送信しました
             </div>
           )}
 
           {session ? (
-            <>
+            <div className="space-y-6">
               <BalanceCard accountId={session.accountId} />
-              <QuickActions
-                onSend={() => setShowSendModal(true)}
-                onReceive={() => setShowReceiveModal(true)}
-                onStake={() => window.location.href = "/staking"}
-                onGas={() => window.location.href = "/gas"}
-              />
-            </>
+              <div className="mt-6">
+                <QuickActions
+                  onSend={() => setShowSendModal(true)}
+                  onReceive={() => setShowReceiveModal(true)}
+                  onStake={() => window.location.href = "/staking"}
+                  onGas={() => window.location.href = "/gas"}
+                />
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="w-20 h-20 rounded-none bg-card border-2 border-text-primary flex items-center justify-center mb-6 shadow-[4px_4px_0px_0px_#2d3235]">

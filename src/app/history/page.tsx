@@ -14,7 +14,7 @@ export default function HistoryPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-text-primary">トランザクション履歴</h2>
           </div>
-          <div className="bg-card border-2 border-text-primary retro-shadow p-12 text-center text-text-secondary flex flex-col items-center gap-3">
+          <div className="bg-card border-2 border-text-primary retro-shadow p-12 text-center text-text-secondary flex flex-col items-center gap-4">
             <Clock className="w-10 h-10" />
             <p className="text-sm">トランザクション履歴は準備中です</p>
             <p className="text-xs text-text-secondary/60">今後専用のTxノードサーバーを実装予定です</p>
