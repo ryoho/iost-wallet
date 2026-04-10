@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-// CoinGecko APIからIOST/JPYレートを取得
 const COINGECKO_IOST_ID = "iostoken";
 
 let cachedRate: number | null = null;
 let cacheTime = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5分キャッシュ
+const CACHE_DURATION = 5 * 60 * 1000;
 
 async function fetchIostRate(): Promise<number> {
   if (cachedRate && Date.now() - cacheTime < CACHE_DURATION) {
@@ -19,10 +18,10 @@ async function fetchIostRate(): Promise<number> {
     );
     if (!res.ok) throw new Error("Rate fetch failed");
     const data = await res.json();
-    const rate = (data as Record<string, unknown>)?.iost as Record<string, unknown> | undefined;
-    const jpy = rate?.jpy as number | undefined;
-    if (jpy && jpy > 0) {
-      cachedRate = jpy;
+    const jpy = (data as Record<string, unknown>)?.[COINGECKO_IOST_ID] as Record<string, unknown> | undefined;
+    const rate = jpy?.jpy as number | undefined;
+    if (rate && rate > 0) {
+      cachedRate = rate;
       cacheTime = Date.now();
     }
     return cachedRate ?? 0;
@@ -31,12 +30,35 @@ async function fetchIostRate(): Promise<number> {
   }
 }
 
+// モジュールレベルでRate状態を共有
+let globalRate: number = cachedRate ?? 0;
+const listeners = new Set<() => void>();
+
+function notifyListeners() {
+  listeners.forEach((fn) => fn());
+}
+
 export function useIostRate(): number {
-  const [rate, setRate] = useState(cachedRate ?? 0);
+  const [rate, setRate] = useState(globalRate);
+  const rateRef = useRef(globalRate);
+
+  useEffect(() => {
+    const listener = () => {
+      if (rateRef.current !== globalRate) {
+        rateRef.current = globalRate;
+        setRate(globalRate);
+      }
+    };
+    listeners.add(listener);
+    return () => { listeners.delete(listener); };
+  }, []);
 
   const fetchRate = useCallback(async () => {
     const r = await fetchIostRate();
-    setRate(r);
+    if (r !== globalRate) {
+      globalRate = r;
+      notifyListeners();
+    }
   }, []);
 
   useEffect(() => { fetchRate(); }, [fetchRate]);
@@ -44,4 +66,8 @@ export function useIostRate(): number {
   return rate;
 }
 
-export { fetchIostRate };
+export { fetchIostRate, getCachedRate };
+
+function getCachedRate(): number {
+  return cachedRate ?? 0;
+}

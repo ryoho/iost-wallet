@@ -35,7 +35,9 @@ export interface IOSTAccountResponse {
 export interface ParsedBalance {
   iost: number;
   gas: number;
+  gasTotal: number;
   ram: number;
+  ramTotal: number;
   staked: number;
   jpyEquivalent: number;
 }
