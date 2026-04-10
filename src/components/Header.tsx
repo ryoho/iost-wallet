@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import PinInputDialog from "@/components/PinInputDialog";
 import AccountSwitcher from "@/components/AccountSwitcher";
 import { useState } from "react";
+import { LogOut, Lock, Unlock, Users, ChevronDown } from "lucide-react";
 
 export default function Header() {
   const { user, logout, wallets, activeWalletId, session, unlock, lock, isUnlocked } = useAuth();
@@ -27,27 +28,27 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-100 px-4 py-3">
+      <header className="sticky top-0 z-40 bg-card/90 backdrop-blur-sm border-b-2 border-text-primary px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-none bg-bg border-2 border-text-primary flex items-center justify-center flex-shrink-0">
               <span className="text-sm">👤</span>
             </div>
             <div className="min-w-0">
-              <p className="text-gray-400 text-[11px]">ようこそ</p>
-              <p className="text-gray-700 font-semibold text-sm truncate">{iostName}</p>
+              <p className="text-text-secondary text-[11px]">ようこそ</p>
+              <p className="text-text-primary font-semibold text-sm truncate">{iostName}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {wallets.length > 0 && (
-              <button onClick={() => setShowSwitcher(true)} className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-sm hover:bg-gray-100 transition-colors" title="切り替え">💎</button>
+              <button onClick={() => setShowSwitcher(true)} className="w-9 h-9 rounded-none bg-bg border-2 border-text-primary flex items-center justify-center text-sm hover:bg-[#e8b056]/20 transition-colors" title="切り替え"><Users className="w-4 h-4" /></button>
             )}
             {isUnlocked ? (
-              <button onClick={lock} className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-sm hover:bg-gray-100 transition-colors" title="ロック">🔒</button>
+              <button onClick={lock} className="w-9 h-9 rounded-none bg-bg border-2 border-text-primary flex items-center justify-center text-sm hover:bg-[#e8b056]/20 transition-colors" title="ロック"><Lock className="w-4 h-4" /></button>
             ) : (
-              <button onClick={() => { setPinError(null); setShowPinInput(true); }} className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-sm hover:bg-gray-100 transition-colors" title="解除">🔓</button>
+              <button onClick={() => { setPinError(null); setShowPinInput(true); }} className="w-9 h-9 rounded-none bg-bg border-2 border-text-primary flex items-center justify-center text-sm hover:bg-[#e8b056]/20 transition-colors" title="解除"><Unlock className="w-4 h-4" /></button>
             )}
-            <button onClick={logout} className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-sm hover:bg-gray-100 transition-colors" title="ログアウト">🚪</button>
+            <button onClick={logout} className="w-9 h-9 rounded-none bg-bg border-2 border-text-primary flex items-center justify-center text-sm hover:bg-[#c24b46]/20 transition-colors" title="ログアウト"><LogOut className="w-4 h-4" /></button>
           </div>
         </div>
       </header>

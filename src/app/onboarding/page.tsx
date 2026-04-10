@@ -1,28 +1,45 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
+import { Wallet, Import } from "lucide-react";
 
 export default function OnboardingPage() {
-  const { user, needsOnboarding } = useAuth();
+  const { needsOnboarding } = useAuth();
+
   useEffect(() => { if (needsOnboarding === false) window.location.href = "/"; }, [needsOnboarding]);
-  if (typeof window === "undefined" || !user) return null;
-  if (typeof window !== "undefined" && !user) { window.location.href = "/login"; return null; }
 
   const goToCreate = () => { window.location.href = "/create"; };
   const goImport = () => { window.location.href = "/import"; };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6">
-      <div className="mb-8"><Image src="/chan01.png" alt="" width={120} height={120} priority /></div>
-      <div className="text-center mb-8"><h1 className="text-xl font-bold text-gray-800 mb-2">🎉 ようこそ！</h1><p className="text-gray-400 text-sm">IOSTアカウントをお持ちですか？</p></div>
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-6">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-[#c24b46] drop-shadow-[2px_2px_0_#2d3235] mb-2">🎉 ようこそ！</h1>
+        <p className="text-text-secondary text-sm">IOSTアカウントをお持ちですか？</p>
+      </div>
       <div className="w-full max-w-sm space-y-3">
-        <button onClick={goToCreate} className="w-full bg-white border border-gray-200 rounded-xl p-5 text-left hover:bg-gray-50 transition-colors">
-          <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-xl">✨</div><div><p className="text-gray-700 font-medium">新しく作成する</p><p className="text-gray-400 text-xs mt-0.5">無料で即座に作成</p></div></div>
+        <button onClick={goToCreate} className="w-full bg-card border-2 border-text-primary retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all p-5 text-left">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#c24b46] text-white border-2 border-text-primary flex items-center justify-center shadow-[4px_4px_0px_0px_#2d3235]">
+              <Wallet className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-text-primary font-medium">新しく作成する</p>
+              <p className="text-text-secondary text-xs mt-0.5">無料で即座に作成</p>
+            </div>
+          </div>
         </button>
-        <button onClick={goImport} className="w-full bg-white border border-gray-200 rounded-xl p-5 text-left hover:bg-gray-50 transition-colors">
-          <div className="flex items-center gap-4"><div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-xl">🔑</div><div><p className="text-gray-700 font-medium">インポート</p><p className="text-gray-400 text-xs mt-0.5">既存のアカウントを取込</p></div></div>
+        <button onClick={goImport} className="w-full bg-card border-2 border-text-primary retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all p-5 text-left">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-[#e8b056] text-[#2d3235] border-2 border-text-primary flex items-center justify-center shadow-[4px_4px_0px_0px_#2d3235]">
+              <Import className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-text-primary font-medium">インポート</p>
+              <p className="text-text-secondary text-xs mt-0.5">既存のアカウントを取込</p>
+            </div>
+          </div>
         </button>
       </div>
     </div>

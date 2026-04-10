@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { rpc } from "@/lib/iost";
+import { getRPC } from "@/hooks/useIOST";
 import type { ParsedBalance } from "@/types/iost";
 
 // IOST/JPY レート（ハードコード - 将来的にAPIから取得）
@@ -36,8 +36,8 @@ export function useIOSTBalance(accountId: string): UseIOSTBalanceReturn {
     try {
       // アカウント情報と残高を並列取得
       const [accountRes, balanceRes] = await Promise.all([
-        rpc.blockchain.getAccountInfo(accountId, false) as Promise<Record<string, unknown>>,
-        rpc.blockchain.getBalance(accountId, "iost", 0) as Promise<Record<string, unknown>>,
+        getRPC().blockchain.getAccountInfo(accountId, false) as Promise<Record<string, unknown>>,
+        getRPC().blockchain.getBalance(accountId, "iost", 0) as Promise<Record<string, unknown>>,
       ]);
 
       const account = (accountRes?.result || accountRes) as Record<string, unknown> | null;

@@ -10,7 +10,7 @@ import BalanceCard from "@/components/BalanceCard";
 import QuickActions from "@/components/QuickActions";
 import TxHistory from "@/components/TxHistory";
 import SendModal from "@/components/SendModal";
-import Image from "next/image";
+import { Lock, LockOpen } from "lucide-react";
 
 export default function Home() {
   const { wallets, activeWalletId, session } = useAuth();
@@ -22,11 +22,11 @@ export default function Home() {
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-bg flex flex-col">
         <Header />
         <main className="flex-1 px-4 py-5 pb-24 space-y-5">
           {txResult && (
-            <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 font-medium">
+            <div className="bg-[#ecfdf5] border-2 border-text-primary text-[#1d8f6d] text-sm rounded-none px-4 py-3 font-medium">
               ✅ トランザクション送信完了
             </div>
           )}
@@ -40,16 +40,18 @@ export default function Home() {
                 onStake={() => window.location.href = "/staking"}
               />
               <div>
-                <h3 className="text-gray-500 font-semibold text-sm px-1 mb-3">📋 最近のトランザクション</h3>
-                <TxHistory />
+                <h3 className="text-text-secondary font-semibold text-sm px-1 mb-3">📋 最近のトランザクション</h3>
+                <TxHistory accountId={session.accountId} />
               </div>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-16">
-              <Image src="/chan01.png" alt="IOSTちゃん" width={100} height={100} className="mb-4" />
-              <div className="bg-white rounded-xl shadow-sm p-6 text-center max-w-sm w-full">
-                <p className="text-gray-800 font-semibold mb-2">🔐 ウォレットを解除してください</p>
-                <p className="text-gray-400 text-sm">右上の🔓をタップしてPINを入力</p>
+              <div className="w-16 h-16 rounded-full bg-[#e8b056]/20 border-2 border-text-primary flex items-center justify-center mb-4">
+                <Lock className="w-8 h-8 text-[#2d3235]" />
+              </div>
+              <div className="bg-card border-2 border-text-primary retro-shadow p-6 text-center max-w-sm w-full">
+                <p className="text-text-primary font-semibold mb-2">🔐 ウォレットを解除してください</p>
+                <p className="text-text-secondary text-sm">右上のロックアイコンをタップしてPINを入力</p>
               </div>
             </div>
           )}
@@ -69,15 +71,15 @@ export default function Home() {
 
         {showReceiveModal && session && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-            <div className="w-full max-w-sm bg-white rounded-xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base font-semibold text-gray-800">📥 受け取る</h3>
-                <button onClick={() => setShowReceiveModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-50">✕</button>
+            <div className="w-full max-w-sm bg-card border-2 border-text-primary retro-shadow p-6">
+              <div className="flex items-center justify-between mb-5 border-b-2 border-bg pb-4">
+                <h3 className="text-base font-semibold text-text-primary">📥 受け取る</h3>
+                <button onClick={() => setShowReceiveModal(false)} className="w-8 h-8 flex items-center justify-center rounded-none text-text-secondary hover:bg-bg transition-colors">✕</button>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <p className="font-mono text-sm text-gray-700 break-all">{session.accountId}</p>
+              <div className="bg-bg border-2 border-text-primary rounded-none p-4 mb-4">
+                <p className="font-mono text-sm text-text-primary break-all">{session.accountId}</p>
               </div>
-              <button onClick={() => navigator.clipboard.writeText(session.accountId)} className="w-full bg-gray-50 border border-gray-200 text-gray-600 text-sm font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">📋 コピー</button>
+              <button onClick={() => navigator.clipboard.writeText(session.accountId)} className="w-full bg-bg border-2 border-text-primary text-text-primary text-sm font-medium py-3 rounded-none hover:bg-[#e8b056] transition-colors">📋 コピー</button>
             </div>
           </div>
         )}

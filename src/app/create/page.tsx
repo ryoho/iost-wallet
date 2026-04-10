@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { RequireAuth } from "@/components/RequireAuth";
+import { Sparkles, Download, Copy } from "lucide-react";
 
 type State = "idle" | "creating" | "success" | "failed";
 
@@ -14,7 +15,7 @@ export default function CreatePage() {
   const [error, setError] = useState("");
 
   const create = async () => {
-    if (!window.confirm("🍭 アカウントを作りますか？")) return;
+    if (!window.confirm("✨ アカウントを作りますか？")) return;
     setLoading(true); setError(""); setState("creating");
     try {
       const res = await fetch("/api/create-account", { method: "POST", headers: { "Content-Type": "application/json" } });
@@ -31,31 +32,38 @@ export default function CreatePage() {
     const blob = new Blob([`アカウント: ${acc}\n公開鍵: ${pubKey}\n秘密鍵: ${secKey}`], { type: "text/plain" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${acc}.txt`; a.click();
   };
-  const goToLogin = () => { window.location.href = "/login"; };
+  const goToLogin = () => { window.location.href = "/"; };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center px-6 py-8">
-      <h2 className="text-lg font-semibold text-gray-800 mb-6 self-start">🍭 アカウントをつくる</h2>
-      {state === "idle" && <button onClick={create} disabled={loading} className="w-full max-w-sm bg-blue-500 text-white font-medium px-4 py-3.5 rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors mb-6">{loading ? "⏳ 作成中..." : "🍭 つくる"}</button>}
-      <div className="mb-5"><Image src={state === "creating" ? "/chan02.png" : state === "failed" ? "/chan05.png" : "/chan06.png"} alt="" width={120} height={120} /></div>
+    <RequireAuth>
+    <div className="min-h-screen bg-bg flex flex-col items-center px-6 py-8">
+      <h2 className="text-lg font-semibold text-text-primary mb-6 self-start">✨ アカウントをつくる</h2>
+      {state === "idle" && <button onClick={create} disabled={loading} className="w-full max-w-sm bg-[#1d8f6d] text-white font-medium px-4 py-3.5 border-2 border-text-primary retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50 mb-6">{loading ? "⏳ 作成中..." : "✨ つくる"}</button>}
+      <div className="mb-5 w-16 h-16 border-2 border-text-primary flex items-center justify-center bg-[#e8b056]/20 shadow-[4px_4px_0px_0px_#2d3235]">
+        {state === "creating" && <span className="text-3xl">⏳</span>}
+        {state === "failed" && <span className="text-3xl">❌</span>}
+        {state === "success" && <span className="text-3xl">✅</span>}
+        {state === "idle" && <Sparkles className="w-8 h-8 text-[#2d3235]" />}
+      </div>
       {(state !== "idle") && (
-        <div className="w-full max-w-sm bg-white rounded-xl shadow-sm p-5 mb-5 text-center">
-          <p className="text-gray-600 text-sm mb-2">🍭 あなたのアカウント</p>
-          {state === "creating" && <p className="text-blue-500 font-semibold">⏳ 作成中...</p>}
-          {state === "success" && <p className="text-green-600 font-semibold text-lg">{acc}</p>}
-          {state === "failed" && <p className="text-red-500 font-semibold">❌ 失敗</p>}
-          <p className="text-red-400 text-xs mt-3">⚠ 秘密鍵は必ず保存してください<br />⚠ 絶対に他人に教えないでください</p>
+        <div className="w-full max-w-sm bg-card border-2 border-text-primary retro-shadow p-5 mb-5 text-center">
+          <p className="text-text-primary text-sm mb-2">✨ あなたのアカウント</p>
+          {state === "creating" && <p className="text-[#1d8f6d] font-semibold">⏳ 作成中...</p>}
+          {state === "success" && <p className="text-[#1d8f6d] font-semibold text-lg">{acc}</p>}
+          {state === "failed" && <p className="text-[#c24b46] font-semibold">❌ 失敗</p>}
+          <p className="text-[#c24b46] text-xs mt-3">⚠ 秘密鍵は必ず保存してください<br />⚠ 絶対に他人に教えないでください</p>
         </div>
       )}
-      {error && <div className="w-full max-w-sm bg-red-50 text-red-500 text-sm rounded-lg px-4 py-3 mb-5">{error}</div>}
+      {error && <div className="w-full max-w-sm bg-[#c24b46]/10 border-2 border-[#c24b46] text-[#c24b46] text-sm rounded-none px-4 py-3 mb-5">{error}</div>}
       {state === "success" && (
         <div className="w-full max-w-sm space-y-3 mb-6">
-          <button onClick={copy} className="w-full bg-gray-50 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">📎 秘密鍵をコピー</button>
-          <button onClick={download} className="w-full bg-gray-50 border border-gray-200 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors">📥 ダウンロード</button>
-          <button onClick={goToLogin} className="w-full bg-gray-900 text-white font-medium py-3 rounded-lg hover:bg-gray-800 transition-colors">🔐 インポート</button>
+          <button onClick={copy} className="w-full bg-bg border-2 border-text-primary text-text-primary font-medium py-3 rounded-none retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"><Copy className="w-4 h-4" /> 秘密鍵をコピー</button>
+          <button onClick={download} className="w-full bg-bg border-2 border-text-primary text-text-primary font-medium py-3 rounded-none retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"><Download className="w-4 h-4" /> ダウンロード</button>
+          <a href="/import" className="w-full block text-center bg-text-primary text-white font-medium py-3 border-2 border-text-primary hover:bg-[#c24b46] transition-colors">🔑 インポート</a>
         </div>
       )}
-      <button onClick={goToLogin} className="text-gray-400 text-sm mt-4 hover:text-gray-600">← ログインに戻る</button>
+      <button onClick={goToLogin} className="text-text-secondary text-sm mt-4 hover:text-text-primary">← ホームに戻る</button>
     </div>
+    </RequireAuth>
   );
 }

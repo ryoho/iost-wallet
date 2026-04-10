@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "@/hooks/useAuth";
 import "./globals.css";
 
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "IOST Wallet",
-  description: "IOST Web Wallet Application - Mobile First PWA Wallet",
+  description: "IOST Web Wallet Application - Retro Minimalist Wallet",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -17,7 +24,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#E60012",
+  themeColor: "#2d3235",
 };
 
 export default function RootLayout({
@@ -30,7 +37,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="min-h-screen bg-bg text-text-primary antialiased">
+      <body className={`${jetBrainsMono.variable} min-h-screen bg-bg text-text-primary antialiased font-mono`}>
         <AuthProvider>
           <div className="mx-auto max-w-lg min-h-screen flex flex-col">
             {children}

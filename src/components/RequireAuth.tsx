@@ -24,10 +24,9 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (loading || needsOnboarding === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
-          <div className="text-gray-400 text-sm mb-2">読み込み中...</div>
-          <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto" />
+          <div className="w-5 h-5 border-2 border-bg border-t-text-primary rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );
@@ -35,10 +34,10 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (!user || needsOnboarding) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
-          <div className="text-gray-400 text-sm mb-2">リダイレクト中...</div>
-          <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto" />
+          <div className="text-text-secondary text-sm mb-2">リダイレクト中...</div>
+          <div className="w-5 h-5 border-2 border-bg border-t-text-primary rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );

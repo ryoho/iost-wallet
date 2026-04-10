@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { RequireAuth } from "@/components/RequireAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { addWallet } from "@/lib/keystore";
+import { Eye, EyeOff, Key, User } from "lucide-react";
 
 type Step = "pin" | "confirm" | "import";
 
@@ -27,8 +29,6 @@ export default function ImportPage() {
     setLoading(true);
     try {
       await addWallet(user.uid, name.trim(), key.trim(), pin);
-      const { getWallets } = await import("@/lib/keystore");
-      await getWallets(user.uid);
       window.location.href = "/";
     }
     catch { setError("保存に失敗しました"); }
@@ -36,27 +36,54 @@ export default function ImportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-blue-500 px-4 py-4">
+    <RequireAuth>
+    <div className="min-h-screen bg-bg flex flex-col">
+      <div className="top-stripes"><div /><div /><div /><div /></div>
+      <header className="px-4 py-4 border-b-2 border-text-primary">
         <div className="flex items-center gap-2 mb-2">
-          {step !== "pin" && <button onClick={() => setStep(step === "confirm" ? "pin" : "confirm")} className="text-white/80 hover:text-white">←</button>}
-          <h1 className="text-white font-semibold">{step === "pin" ? "PIN設定" : step === "confirm" ? "PIN確認" : "インポート"}</h1>
+          {step !== "pin" && <button onClick={() => setStep(step === "confirm" ? "pin" : "confirm")} className="text-text-primary hover:underline">←</button>}
+          <h1 className="text-text-primary font-semibold">{step === "pin" ? "PIN設定" : step === "confirm" ? "PIN確認" : "インポート"}</h1>
         </div>
-        <div className="flex gap-1.5"><div className={`h-1 flex-1 rounded-full ${step === "pin" ? "bg-white" : "bg-white/40"}`} /><div className={`h-1 flex-1 rounded-full ${step === "confirm" ? "bg-white" : step === "import" ? "bg-white/60" : "bg-white/30"}`} /><div className={`h-1 flex-1 rounded-full ${step === "import" ? "bg-white" : "bg-white/30"}`} /></div>
+        <div className="flex gap-1.5"><div className={`h-1 flex-1 rounded-full ${step === "pin" ? "bg-text-primary" : "bg-text-primary/40"}`} /><div className={`h-1 flex-1 rounded-full ${step === "confirm" ? "bg-text-primary" : step === "import" ? "bg-text-primary/60" : "bg-text-primary/30"}`} /><div className={`h-1 flex-1 rounded-full ${step === "import" ? "bg-text-primary" : "bg-text-primary/30"}`} /></div>
       </header>
       <main className="flex-1 px-4 py-6 space-y-4">
-        {step === "pin" && <><input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} placeholder="PIN（4桁以上）" maxLength={8} className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white text-gray-800 text-center text-xl tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-400 font-mono" /><button onClick={next} className="w-full bg-blue-500 text-white font-medium py-3 rounded-lg hover:bg-blue-600 transition-colors">次へ</button></>}
-        {step === "confirm" && <><input type="password" inputMode="numeric" value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ""))} placeholder="PIN再入力" maxLength={8} className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white text-gray-800 text-center text-xl tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-400 font-mono" /><button onClick={confirm} className="w-full bg-blue-500 text-white font-medium py-3 rounded-lg hover:bg-blue-600 transition-colors">確認</button></>}
+        {step === "pin" && (
+          <>
+            <input type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))} placeholder="PIN（4桁以上）" maxLength={8} className="w-full px-4 py-3 rounded-none border-2 border-text-primary bg-card text-text-primary text-center text-xl tracking-widest focus:outline-none focus:ring-2 focus:ring-[#e8b056] focus:border-text-primary font-mono" />
+            <button onClick={next} className="w-full bg-text-primary text-white font-medium py-3 border-2 border-text-primary hover:bg-[#c24b46] transition-colors">次へ</button>
+          </>
+        )}
+        {step === "confirm" && (
+          <>
+            <input type="password" inputMode="numeric" value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ""))} placeholder="PIN再入力" maxLength={8} className="w-full px-4 py-3 rounded-none border-2 border-text-primary bg-card text-text-primary text-center text-xl tracking-widest focus:outline-none focus:ring-2 focus:ring-[#e8b056] focus:border-text-primary font-mono" />
+            <button onClick={confirm} className="w-full bg-text-primary text-white font-medium py-3 border-2 border-text-primary hover:bg-[#c24b46] transition-colors">確認</button>
+          </>
+        )}
         {step === "import" && (
           <form onSubmit={submit} className="space-y-4">
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">アカウント名</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="iost_xxxxx" className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" required /></div>
-            <div><label className="block text-sm font-medium text-gray-700 mb-1">秘密鍵</label><div className="relative"><input type={showKey ? "text" : "password"} value={key} onChange={(e) => setKey(e.target.value)} placeholder="5xxxxx..." className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-200 bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-mono" required /><button type="button" onClick={() => setShowKey(!showKey)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showKey ? "🙈" : "👁️"}</button></div><p className="text-[11px] text-gray-400 mt-1">🔒 PINで暗号化して保存します</p></div>
-            {error && <div className="bg-red-50 text-red-500 text-sm rounded-lg px-4 py-3">{error}</div>}
-            <button type="submit" disabled={loading} className="w-full bg-blue-500 text-white font-medium py-3 rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors">{loading ? "保存中..." : "インポート"}</button>
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">アカウント名</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="iost_xxxxx" className="w-full pl-10 pr-4 py-3 rounded-none border-2 border-text-primary bg-card text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-[#e8b056] focus:border-text-primary" required />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">秘密鍵</label>
+              <div className="relative">
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                <input type={showKey ? "text" : "password"} value={key} onChange={(e) => setKey(e.target.value)} placeholder="5xxxxx..." className="w-full pl-10 pr-12 py-3 rounded-none border-2 border-text-primary bg-card text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-[#e8b056] focus:border-text-primary font-mono" required />
+                <button type="button" onClick={() => setShowKey(!showKey)} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary">{showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+              </div>
+              <p className="text-[11px] text-text-secondary mt-1">🔒 PINで暗号化して保存します</p>
+            </div>
+            {error && <div className="bg-[#c24b46]/10 border-2 border-[#c24b46] text-[#c24b46] text-sm rounded-none px-4 py-3">{error}</div>}
+            <button type="submit" disabled={loading} className="w-full bg-text-primary text-white font-medium py-3 border-2 border-text-primary hover:bg-[#c24b46] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">{loading ? "保存中..." : "インポート"}</button>
           </form>
         )}
-        {error && step !== "import" && <div className="bg-red-50 text-red-500 text-sm rounded-lg px-4 py-3">{error}</div>}
+        {error && step !== "import" && <div className="bg-[#c24b46]/10 border-2 border-[#c24b46] text-[#c24b46] text-sm rounded-none px-4 py-3">{error}</div>}
       </main>
     </div>
+    </RequireAuth>
   );
 }

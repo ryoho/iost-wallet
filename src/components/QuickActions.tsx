@@ -18,10 +18,10 @@ export default function QuickActions({ onSend, onReceive, onStake }: QuickAction
     <div className="flex justify-around py-3">
       {actions.map((a) => (
         <button key={a.key} onClick={handlers[a.key]} className="flex flex-col items-center gap-2">
-          <div className="w-14 h-14 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+          <div className="w-14 h-14 rounded-none bg-card border-2 border-text-primary retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center">
             <span className="text-xl">{a.icon}</span>
           </div>
-          <span className="text-xs text-gray-600 font-medium">{a.label}</span>
+          <span className="text-xs text-text-primary font-medium">{a.label}</span>
         </button>
       ))}
     </div>

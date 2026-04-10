@@ -4,27 +4,18 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
-import Image from "next/image";
 
 export default function LoginPage() {
   const { user, loading, needsOnboarding, signInWithGoogle } = useAuth();
-  const [errorMsg, setErrorMsg] = useState("");
   const [authReady, setAuthReady] = useState(false);
 
-  // 直接 auth を監視（AuthProvider と独立して）
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsub = onAuthStateChanged(auth, () => {
       setAuthReady(true);
-      if (firebaseUser) {
-        console.log("[Login] Auth ready:", firebaseUser.email);
-      } else {
-        console.log("[Login] No user");
-      }
     });
     return () => unsub();
   }, []);
 
-  // AuthContext の状態に応じた遷移
   useEffect(() => {
     if (loading || !authReady) return;
     if (!user) return;
@@ -38,42 +29,36 @@ export default function LoginPage() {
   }, [user, loading, needsOnboarding, authReady]);
 
   const handleGoogleLogin = async () => {
-    setErrorMsg("");
     try {
       await signInWithGoogle();
     } catch {
-      setErrorMsg("ログインに失敗しました");
+      // ログイン失敗時はAuthProvider側で処理
     }
   };
 
   if (loading || !authReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
-          <div className="text-gray-400 text-sm mb-2">読み込み中...</div>
-          <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin mx-auto" />
+          <div className="w-5 h-5 border-2 border-border border-t-brand rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6">
-      <div className="mb-10">
-        <Image src="/chan01.png" alt="IOSTちゃん" width={120} height={120} priority />
-      </div>
-
-      <div className="w-full max-w-sm bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <div className="text-center">
-          <h1 className="text-xl font-bold text-gray-800 mb-1">💎 IOST Wallet</h1>
-          <p className="text-gray-400 text-sm">シンプルで安全なウォレット</p>
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-6">
+      <div className="w-full max-w-sm border-2 border-text-primary p-8 retro-shadow bg-card">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-[#c24b46] drop-shadow-[2px_2px_0_#2d3235] mb-1">
+            💎 IOST Wallet
+          </h1>
+          <p className="text-text-secondary text-sm">シンプルで安全なウォレット</p>
         </div>
-
-        {errorMsg && <div className="bg-red-50 text-red-500 text-sm rounded-lg px-4 py-3">{errorMsg}</div>}
 
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 font-medium px-4 py-3 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors"
+          className="w-full flex items-center justify-center gap-3 bg-card border-2 border-text-primary text-text-primary font-medium px-4 py-3 retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -83,21 +68,10 @@ export default function LoginPage() {
           </svg>
           Googleでログイン
         </button>
-
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-gray-300 text-xs">または</span>
-          <div className="flex-1 h-px bg-gray-100" />
-        </div>
-
-        <a href="/create" className="w-full block text-center bg-gray-900 text-white font-medium px-4 py-3 rounded-lg hover:bg-gray-800 active:bg-gray-700 transition-colors">
-          🍭 アカウントをつくる
-        </a>
       </div>
 
-      <p className="text-xs text-gray-300 mt-8 text-center leading-relaxed max-w-xs">
-        ログインするとIOSTアカウントの情報をインポートできます。<br />
-        秘密鍵は暗号化して保存され、安全に管理されます 🔒
+      <p className="text-xs text-text-secondary mt-8 text-center leading-relaxed max-w-xs">
+        Google認証後、IOSTアカウントの作成またはインポートを行います 🔒
       </p>
     </div>
   );
