@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
+import { Wallet } from "lucide-react";
 
 export default function LoginPage() {
   const { user, loading, needsOnboarding, signInWithGoogle } = useAuth();
@@ -40,25 +41,28 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
-          <div className="w-5 h-5 border-2 border-border border-t-brand rounded-full animate-spin mx-auto" />
+          <div className="w-6 h-6 border-2 border-bg border-t-text-primary rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm border-2 border-text-primary p-8 retro-shadow bg-card">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-[#c24b46] drop-shadow-[2px_2px_0_#2d3235] mb-1">
-            💎 IOST Wallet
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-8">
+      <div className="w-full max-w-sm border-2 border-text-primary p-10 retro-shadow bg-card">
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 border-2 border-text-primary mx-auto mb-4 flex items-center justify-center bg-[#c24b46]/10">
+            <Wallet className="w-7 h-7 text-[#c24b46]" />
+          </div>
+          <h1 className="text-2xl font-bold text-[#c24b46] drop-shadow-[2px_2px_0_#2d3235] mb-2">
+            IOST Wallet
           </h1>
           <p className="text-text-secondary text-sm">シンプルで安全なウォレット</p>
         </div>
 
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-card border-2 border-text-primary text-text-primary font-medium px-4 py-3 retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+          className="w-full flex items-center justify-center gap-3 bg-card border-2 border-text-primary text-text-primary font-medium px-4 py-4 retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -70,8 +74,8 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <p className="text-xs text-text-secondary mt-8 text-center leading-relaxed max-w-xs">
-        Google認証後、IOSTアカウントの作成またはインポートを行います 🔒
+      <p className="text-xs text-text-secondary mt-10 text-center leading-relaxed max-w-xs">
+        Google認証後、IOSTアカウントの作成またはインポートを行います
       </p>
     </div>
   );

@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import PinInputDialog from "@/components/PinInputDialog";
 import AccountSwitcher from "@/components/AccountSwitcher";
 import { useState } from "react";
-import { LogOut, Lock, Unlock, Users, ChevronDown } from "lucide-react";
+import { LogOut, Lock, Unlock, Users, User } from "lucide-react";
 
 export default function Header() {
   const { user, logout, wallets, activeWalletId, session, unlock, lock, isUnlocked } = useAuth();
@@ -32,7 +32,7 @@ export default function Header() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-none bg-bg border-2 border-text-primary flex items-center justify-center flex-shrink-0">
-              <span className="text-sm">👤</span>
+              <User className="w-4 h-4 text-text-secondary" />
             </div>
             <div className="min-w-0">
               <p className="text-text-secondary text-[11px]">ようこそ</p>
