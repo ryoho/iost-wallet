@@ -8,9 +8,8 @@ import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import BalanceCard from "@/components/BalanceCard";
 import QuickActions from "@/components/QuickActions";
-import TxHistory from "@/components/TxHistory";
 import SendModal from "@/components/SendModal";
-import { Lock, Unlock, ArrowDownRight, Copy, CheckCircle2 } from "lucide-react";
+import { Lock, ArrowDownRight, Copy, CheckCircle2 } from "lucide-react";
 
 export default function Home() {
   const { wallets, activeWalletId, session } = useAuth();
@@ -33,9 +32,9 @@ export default function Home() {
     <RequireAuth>
       <div className="min-h-screen bg-bg flex flex-col">
         <Header />
-        <main className="flex-1 px-6 py-6 pb-24 space-y-6">
+        <div className="flex-1 px-4 py-6 pb-24 space-y-6">
           {txResult && (
-            <div className="bg-[#1d8f6d]/10 border-2 border-[#1d8f6d] text-[#1d8f6d] text-sm rounded-none px-4 py-4 font-medium flex items-center gap-2">
+            <div className="bg-[#1d8f6d]/10 border-2 border-[#1d8f6d] text-[#1d8f6d] text-sm rounded-none px-5 py-4 font-medium flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" /> トランザクションを送信しました
             </div>
           )}
@@ -47,11 +46,8 @@ export default function Home() {
                 onSend={() => setShowSendModal(true)}
                 onReceive={() => setShowReceiveModal(true)}
                 onStake={() => window.location.href = "/staking"}
+                onGas={() => window.location.href = "/gas"}
               />
-              <div>
-                <h3 className="text-text-secondary font-semibold text-sm px-1 mb-4">トランザクション履歴</h3>
-                <TxHistory accountId={session.accountId} />
-              </div>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-16">
@@ -59,13 +55,12 @@ export default function Home() {
                 <Lock className="w-10 h-10 text-[#2d3235]" />
               </div>
               <div className="bg-card border-2 border-text-primary retro-shadow p-8 text-center max-w-sm w-full space-y-3">
-                <Unlock className="w-6 h-6 mx-auto text-text-secondary" />
                 <p className="text-text-primary font-semibold">ウォレットを解除してください</p>
                 <p className="text-text-secondary text-sm">右上のロックアイコンをタップしてPINを入力</p>
               </div>
             </div>
           )}
-        </main>
+        </div>
         <BottomNav />
 
         {showSendModal && session && balance && (

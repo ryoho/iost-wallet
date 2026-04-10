@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { sendTransfer } from "@/lib/transaction";
 import { addTxRecord } from "@/lib/txHistory";
-import { ArrowUpRight, X, Maximize2 } from "lucide-react";
+import { ArrowUpRight, X } from "lucide-react";
 
 interface Props {
   accountId: string;
@@ -56,7 +56,7 @@ export default function SendModal({ accountId, privateKey, balance, onClose, onS
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-text-primary">数量</label>
-              <button type="button" onClick={() => setAmount(balance.toString())} className="text-xs text-[#1d8f6d] font-medium border border-[#1d8f6d] px-2 py-1 hover:bg-[#1d8f6d]/10 transition-colors flex items-center gap-1"><Maximize2 className="w-3 h-3" /> 最大: {balance.toLocaleString("en-US", { maximumFractionDigits: 2 })}</button>
+              <button type="button" onClick={() => setAmount(balance.toString())} className="text-xs text-[#1d8f6d] font-medium border border-[#1d8f6d] px-3 py-1.5 hover:bg-[#1d8f6d]/10 transition-colors">最大: {balance.toLocaleString("en-US", { maximumFractionDigits: 2 })}</button>
             </div>
             <div className="relative">
               <input type="number" step="0.00000001" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className="w-full px-4 py-4 pr-14 rounded-none border-2 border-text-primary bg-card text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-[#e8b056] focus:border-text-primary" required />

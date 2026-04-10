@@ -48,9 +48,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-8">
-      <div className="w-full max-w-sm border-2 border-text-primary p-10 retro-shadow bg-card">
-        <div className="text-center mb-8">
+    <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-6">
+      <div className="w-full max-w-sm border-2 border-text-primary p-8 retro-shadow bg-card">
+        <div className="text-center mb-6">
           <div className="w-14 h-14 border-2 border-text-primary mx-auto mb-4 flex items-center justify-center bg-[#c24b46]/10">
             <Wallet className="w-7 h-7 text-[#c24b46]" />
           </div>

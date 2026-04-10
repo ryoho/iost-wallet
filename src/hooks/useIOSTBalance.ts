@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { getRPC } from "@/hooks/useIOST";
+import { useIostRate } from "@/hooks/useIostRate";
 import type { ParsedBalance } from "@/types/iost";
-
-// IOST/JPY レート（ハードコード - 将来的にAPIから取得）
-const IOST_JPY_RATE = 140;
 
 interface UseIOSTBalanceReturn {
   balance: ParsedBalance | null;
@@ -20,6 +18,7 @@ function parseBalance(rawBalance: string): number {
 }
 
 export function useIOSTBalance(accountId: string): UseIOSTBalanceReturn {
+  const rate = useIostRate();
   const [balance, setBalance] = useState<ParsedBalance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +33,6 @@ export function useIOSTBalance(accountId: string): UseIOSTBalanceReturn {
     setError(null);
 
     try {
-      // アカウント情報と残高を並列取得
       const [accountRes, balanceRes] = await Promise.all([
         getRPC().blockchain.getAccountInfo(accountId, false) as Promise<Record<string, unknown>>,
         getRPC().blockchain.getBalance(accountId, "iost", 0) as Promise<Record<string, unknown>>,
@@ -52,7 +50,6 @@ export function useIOSTBalance(accountId: string): UseIOSTBalanceReturn {
       const gasInfo = (account.gasInfo || {}) as Record<string, unknown>;
       const ramInfo = (account.ram_info || {}) as Record<string, unknown>;
       const iostBalance = parseBalance((bal?.balance as string) || "0");
-      const gasAmount = parseBalance((gasInfo.gas_amount as string) || "0");
       const currentGas = parseBalance((gasInfo.current_gas as string) || "0");
       const ramAvailable = parseBalance((ramInfo.available as string) || "0");
       const frozenBalance = parseBalance((account.frozen_balance as string) || "0");
@@ -62,10 +59,9 @@ export function useIOSTBalance(accountId: string): UseIOSTBalanceReturn {
         gas: currentGas,
         ram: ramAvailable,
         staked: frozenBalance,
-        jpyEquivalent: Math.round(iostBalance * IOST_JPY_RATE),
+        jpyEquivalent: rate > 0 ? Math.round(iostBalance * rate) : 0,
       });
-    } catch (err) {
-      console.error("Failed to fetch IOST balance:", err);
+    } catch {
       setError("残高の取得に失敗しました");
       setBalance(null);
     } finally {

@@ -47,7 +47,7 @@ export default function ImportPage() {
     <RequireAuth>
       <div className="min-h-screen bg-bg flex flex-col">
         <Header />
-        <main className="flex-1 px-6 py-8 space-y-6 pb-24">
+        <div className="flex-1 px-4 py-6 space-y-6 pb-24">
           {/* Step Indicator */}
           <div className="flex items-center gap-2 justify-center">
             {steps.map((s, i) => (
@@ -111,7 +111,7 @@ export default function ImportPage() {
           )}
 
           <button onClick={() => { if (step === "confirm") setStep("pin"); else if (step === "import") setStep("confirm"); else window.location.href = "/"; }} className="w-full max-w-sm mx-auto block bg-bg border-2 border-text-primary text-text-primary font-medium py-4 retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"><ArrowLeft className="w-4 h-4" /> 戻る</button>
-        </main>
+        </div>
         <BottomNav />
       </div>
     </RequireAuth>

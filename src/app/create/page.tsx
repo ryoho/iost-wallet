@@ -40,7 +40,7 @@ export default function CreatePage() {
     <RequireAuth>
       <div className="min-h-screen bg-bg flex flex-col">
         <Header />
-        <main className="flex-1 px-6 py-8 space-y-6 pb-24">
+        <div className="flex-1 px-4 py-6 space-y-6 pb-24">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-text-primary flex items-center justify-center gap-2">
               <Sparkles className="w-5 h-5" /> アカウントを作成
@@ -63,11 +63,13 @@ export default function CreatePage() {
           </div>
 
           {(state !== "idle") && (
-            <div className="w-full max-w-sm mx-auto bg-card border-2 border-text-primary retro-shadow p-6 text-center space-y-3">
-              <p className="text-text-primary text-sm">アカウント</p>
-              {state === "creating" && <p className="text-[#1d8f6d] font-semibold">作成中...</p>}
-              {state === "success" && <p className="text-[#1d8f6d] font-semibold text-lg font-mono">{acc}</p>}
-              {state === "failed" && <p className="text-[#c24b46] font-semibold">作成に失敗しました</p>}
+            <div className="w-full max-w-sm mx-auto bg-card border-2 border-text-primary retro-shadow p-6 text-center space-y-4">
+              <div>
+                <p className="text-text-secondary text-xs">アカウント</p>
+                {state === "creating" && <p className="text-[#1d8f6d] font-semibold mt-1">作成中...</p>}
+                {state === "success" && <p className="text-[#1d8f6d] font-semibold text-lg font-mono mt-1">{acc}</p>}
+                {state === "failed" && <p className="text-[#c24b46] font-semibold mt-1">作成に失敗しました</p>}
+              </div>
               <div className="bg-[#c24b46]/5 border border-[#c24b46]/20 p-3 flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 text-[#c24b46] mt-0.5 flex-shrink-0" />
                 <p className="text-[#c24b46] text-xs text-left">秘密鍵は必ず保存してください。他人に教えないでください。</p>
@@ -86,7 +88,7 @@ export default function CreatePage() {
           )}
 
           <button onClick={goHome} className="w-full max-w-sm mx-auto block bg-bg border-2 border-text-primary text-text-primary font-medium py-4 retro-shadow-hover hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"><ArrowLeft className="w-4 h-4" /> ホームに戻る</button>
-        </main>
+        </div>
         <BottomNav />
       </div>
     </RequireAuth>

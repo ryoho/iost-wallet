@@ -15,7 +15,7 @@ export default function SettingsPage() {
     <RequireAuth>
       <div className="min-h-screen bg-bg flex flex-col">
         <Header />
-        <main className="flex-1 px-6 py-6 pb-24 space-y-6">
+        <div className="flex-1 px-4 py-6 pb-24 space-y-6">
           <h2 className="text-xl font-semibold text-text-primary">設定</h2>
           <div className="bg-card border-2 border-text-primary retro-shadow divide-y-2 divide-bg">
             <div className="px-5 py-5 flex items-center gap-4">
@@ -32,7 +32,7 @@ export default function SettingsPage() {
             </div>
             <div className="px-5 py-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-none bg-bg border-2 border-text-primary flex items-center justify-center flex-shrink-0"><Package className="w-6 h-6 text-text-secondary" /></div>
-              <div><p className="text-sm font-medium text-text-primary mb-1">バージョン</p><p className="text-xs text-text-secondary">1.0.0</p></div>
+              <div><p className="text-sm font-medium text-text-primary mb-1">バージョン</p><p className="text-xs text-text-secondary">1.1.0</p></div>
             </div>
           </div>
           {!showConfirm ? (
@@ -46,7 +46,7 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
-        </main>
+        </div>
         <BottomNav />
       </div>
     </RequireAuth>

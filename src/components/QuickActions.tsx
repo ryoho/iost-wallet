@@ -1,21 +1,23 @@
 "use client";
 
-import { ArrowUpRight, ArrowDownLeft, Sprout } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, Sprout, Zap } from "lucide-react";
 
 interface QuickActionsProps {
   onSend: () => void;
   onReceive: () => void;
   onStake: () => void;
+  onGas: () => void;
 }
 
 const actions = [
   { label: "送る", key: "send" as const, icon: ArrowUpRight },
   { label: "受け取る", key: "receive" as const, icon: ArrowDownLeft },
-  { label: "増やす", key: "stake" as const, icon: Sprout },
+  { label: "Gas", key: "gas" as const, icon: Zap },
+  { label: "投票", key: "stake" as const, icon: Sprout },
 ];
 
-export default function QuickActions({ onSend, onReceive, onStake }: QuickActionsProps) {
-  const handlers = { send: onSend, receive: onReceive, stake: onStake };
+export default function QuickActions({ onSend, onReceive, onStake, onGas }: QuickActionsProps) {
+  const handlers = { send: onSend, receive: onReceive, gas: onGas, stake: onStake };
   return (
     <div className="flex justify-around py-4">
       {actions.map((a) => (
